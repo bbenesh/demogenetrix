@@ -12,189 +12,294 @@
 
 # 1. Setup req's for script
 
-
   # Make sure to replace YOUR_GITHUB_TOKEN with your actual GitHub token. 
   # Also, ensure that the jq command-line JSON processor is installed on your system, 
   # as it is used to parse the response from the GitHub API.
   # brew install jq 
 
+  # the script expects the GITHUB_TOKEN environment variable to be set before running. 
+  # You can set the environment variable in your shell before executing the script:
+  #
+  # export GITHUB_TOKEN="your_actual_token_value"
+  # ./your_script.sh
+  #
+  # If you set the environment variable in your shell session using export GITHUB_TOKEN="your_actual_token_value", 
+  # it will only be available for the duration of that shell session. 
+  # Once you close the terminal or open a new session, the environment variable will no longer be set.
+  #
+  # To avoid having to set the environment variable every time you run the script or open a new session, you can consider adding the export statement to your shell profile configuration file. The exact file depends on the shell you are using:
+  #
+  # For Bash, you can add the export statement to your ~/.bashrc or ~/.bash_profile file.
+  # For Zsh, add it to your ~/.zshrc file.
+  # For Fish, add it to your ~/.config/fish/config.fish file.
+  # For example, if you're using Bash, you can add the following line to your ~/.bashrc or ~/.bash_profile:
+  #
+  # bash
+  # Copy code
+  # export GITHUB_TOKEN="your_actual_token_value"
+  #
+  # After saving the file, restart your terminal or run source ~/.bashrc (or source ~/.bash_profile depending on your setup), and the environment variable will be set automatically whenever you open a new shell session.
+  #
+  # Remember to replace "your_actual_token_value" with your GitHub token.
+
+
+# CONSTANTS
+
   # GitHub organization and token
-  github_organization="amazeeio-demos"
+  GITHUB_ORGANIZATION="amazeeio-demos"
   # Demo Creator Script Token
-  github_token="<ADD TOKEN HERE>"
-  
+  # GITHUB_TOKEN="$GITHUB_TOKEN"  
+
+# //TODO break out a function to ask for and store project_name, to replace dir_name
 
 # 2. Clone repo to local
 
-  # Define Git repository URLs
-  repos=("git@github.com:lagoon-examples/drupal-base" "git@github.com:lagoon-examples/drupal9-full.git" "https://github.com/example/repo3.git")
+  # Function to clone repository
+  clone_repository() {
+    # Define Git repository URLs
+    local repos=("git@github.com:lagoon-examples/drupal-base" "git@github.com:lagoon-examples/drupal9-full.git" "https://github.com/example/repo3.git")
+    local choice
 
-  # Display menu to choose a repository
-  echo "Select a Git repository to clone:"
-  for i in "${!repos[@]}"; do
-    echo "$i. ${repos[$i]}"
-  done
+    # Display menu to choose a repository
+    echo "Select a Git repository to clone:"
+    for i in "${!repos[@]}"; do
+      echo "$i. ${repos[$i]}"
+    done
 
-  # Prompt user for repository choice
-  read -p "Enter the number corresponding to the repository: " choice
+    # Prompt user for repository choice
+    read -p "Enter the number corresponding to the repository: " choice
 
-  # Validate user input
-  if ! [[ $choice =~ ^[0-9]+$ ]] || (( choice < 0 || choice >= ${#repos[@]} )); then
-    echo "Invalid input. Please enter a valid number."
-    exit 1
-  fi
+    # Validate user input
+    if ! [[ $choice =~ ^[0-9]+$ ]] || (( choice < 0 || choice >= ${#repos[@]} )); then
+      echo "Invalid input. Please enter a valid number."
+      exit 1
+    fi
 
-  # Prompt user for directory name
-  read -p "Enter a name for the directory: " dir_name
+    # Prompt user for directory name
+    read -p "Enter a name for the directory: " dir_name
 
-  # Clone the chosen repository into the specified directory
-  git clone "${repos[$choice]}" "$dir_name"
+    # Clone the chosen repository into the specified directory
+    git clone "${repos[$choice]}" "$dir_name"
 
-  # Check if the clone was successful
-  if [ $? -eq 0 ]; then
-    echo "Repository cloned successfully into '$dir_name' directory."
-  else
-    echo "Failed to clone repository. Please check the repository URL and try again."
-    exit 1
-  fi
+    # Check if the clone was successful
+    if [ $? -eq 0 ]; then
+      echo "Repository cloned successfully into '$dir_name' directory."
+    else
+      echo "Failed to clone repository. Please check the repository URL and try again."
+      exit 1
+    fi
+  }
 
 # 3. Rename files and replace references to old project name
 
-  # Prompt user for string to look for and string to replace it with
-  #read -p "Enter a string to look for in files: " search_string
-  # read -p "Enter a string to replace it with: " replace_string
+  # Function to rename files and replace reference to old project name
+  rename_files_and_replace() {
+    local search_string
+    local modified_string
 
-  # Extract the part of the repo string after the last /
-  search_string=$(echo "${repos[$choice]}" | awk -F'/' '{print $NF}' | sed 's/\.git$//')
+    # Extract the part of the repo string after the last /
+    search_string=$(echo "${repos[$choice]}" | awk -F'/' '{print $NF}' | sed 's/\.git$//')
 
-  # Use grep to search for the string in all files and replace it
-  grep -rli "$search_string" "$dir_name" | xargs sed -i '' -e "s/$search_string/$dir_name/g"
+    # Use grep to search for the string in all files and replace it
+    grep -rli "$search_string" "$dir_name" | xargs sed -i '' -e "s/$search_string/$dir_name/g"
 
-  # Remove spaces and dashes from the original string
-  modified_string=$(echo "$search_string" | tr -d '[:space:]' | tr -d '-')
+    # Remove spaces and dashes from the original string
+    modified_string=$(echo "$search_string" | tr -d '[:space:]' | tr -d '-')
 
-  # Use grep to search for the modified string in all files and replace it
-  grep -rli "$modified_string" "$dir_name" | xargs sed -i '' -e "s/$modified_string/$dir_name/g"
+    # Use grep to search for the modified string in all files and replace it
+    grep -rli "$modified_string" "$dir_name" | xargs sed -i '' -e "s/$modified_string/$dir_name/g"
 
-  echo "String '$search_string' and '$modified_string' replaced with '$dir_name' in all files."
+    echo "String '$search_string' and '$modified_string' replaced with '$dir_name' in all files."
+  }
 
 # 4. Create a new repo, add local changes, and push up
 
-  # Change into the newly cloned directory
-  cd "$dir_name" || exit 1
+  # Function to create a new repo, add local changes, and push up
+  create_and_push_repo() {
+    local create_repo_response
+    local new_repo_url
 
-  # Create a new GitHub repository using the GitHub API
-  create_repo_response=$(curl -s -H "Authorization: token $github_token" -d '{"name": "'"$dir_name"'", "private": true}' "https://api.github.com/orgs/$github_organization/repos")
+    # Change into the newly cloned directory
+    cd "$dir_name" || exit 1
 
-  # Extract the new repository URL
-  new_repo_url=$(echo "$create_repo_response" | jq -r '.ssh_url')
+    # Create a new GitHub repository using the GitHub API
+    create_repo_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -d '{"name": "'"$dir_name"'", "private": true}' "https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos")
 
-  # Remove the old remote origin
-  git remote remove origin
+    # Extract the new repository URL
+    new_repo_url=$(echo "$create_repo_response" | jq -r '.ssh_url')
 
-  # Add the new remote origin
-  git remote add origin "$new_repo_url"
+    # Remove the old remote origin
+    git remote remove origin
 
-  # Add and commit local changes
-  git add .
-  git commit -m "Project init."
+    # Add the new remote origin
+    git remote add origin "$new_repo_url"
 
-  # Push everything to the main branch on the new repo
-  git push -u origin main
+    # Add and commit local changes
+    git add .
+    git commit -m "Project init."
 
-  echo "Repository '$dir_name' pushed to the new GitHub repository in the '$github_organization' organization."
+    # Push everything to the main branch on the new repo
+    git push -u origin main
+
+    echo "Repository '$dir_name' pushed to the new GitHub repository in the '$GITHUB_ORGANIZATION' organization."
+  }
 
 # 5. Create Lagoon project
-  lagoon add project -p $dir_name -b "^(main|dev|feature.*)$" -g $new_repo_url -S 126 -m true -E main
+
+  # Function to create Lagoon project
+  create_lagoon_project() {
+    lagoon add project -p "$dir_name" -b "^(main|dev|feature.*)$" -g "$new_repo_url" -S 126 -m true -E main
+  }
 
 # 6. Connect Lagoon project to Git repo
   
   # Deploy Key
 
-    # Run the 'lagoon get project-key' command and capture the output
-    project_key=$(lagoon get project-key -p "$dir_name")
+    # Function to add deploy key to the repository
+    add_deploy_key_to_repo() {
+      # Run the 'lagoon get project-key' command and capture the output
+      project_key=$(lagoon get project-key -p "$dir_name")
 
-    # Extract the public key from the output and remove the leading "PUBLICKEY "
-    public_key=$(echo "$project_key" | sed 's/PUBLICKEY //')
+      # Extract the public key from the output and remove the leading "PUBLICKEY "
+      public_key=$(echo "$project_key" | sed 's/PUBLICKEY //')
 
-    # Print the extracted public key for debugging
-    echo "Extracted public key: $public_key"
+      # Print the extracted public key for debugging
+      echo "Extracted public key: $public_key"
 
-    # Construct the JSON data
-    json_data=$(jq -n --arg title "Lagoon Deploy Key" --arg key "$public_key" --argjson read_only true '{"title": $title, "key": $key, "read_only": $read_only}')
+      # Construct the JSON data
+      json_data=$(jq -n --arg title "Lagoon Deploy Key" --arg key "$public_key" --argjson read_only true '{"title": $title, "key": $key, "read_only": $read_only}')
 
-    # Add the deploy key to the new repository using the GitHub API
-    deploy_key_response=$(curl -s -H "Authorization: token $github_token" -H "Content-Type: application/json" -X POST -d "$json_data" "https://api.github.com/repos/$github_organization/$dir_name/keys" | jq '.')
+      # Add the deploy key to the new repository using the GitHub API
+      deploy_key_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" -X POST -d "$json_data" "https://api.github.com/repos/$GITHUB_ORGANIZATION/$dir_name/keys" | jq '.')
 
-    # Print the GitHub API response for debugging
-    echo "GitHub API response: $deploy_key_response"
+      # Print the GitHub API response for debugging
+      echo "GitHub API response: $deploy_key_response"
 
-    echo "Deploy key added to the new repository in the '$github_organization' organization."
-
+      echo "Deploy key added to the new repository in the '$GITHUB_ORGANIZATION' organization."
+    }
 
   # Webhook
 
-  # //TODO - Fix that it's only selecting the push event
+    # Function to add webhook to the repository
+    add_webhook_to_repo() {
+      # //TODO: Fix that it's only selecting the push event
 
-    # Construct the JSON data for the webhook
-    webhook_data=$(jq -n --arg url "https://hooks.lagoon.amazeeio.cloud" '{"name": "web", "config": {"url": $url, "content_type": "json"}, "events": ["push"], "active": true}')
+      # Construct the JSON data for the webhook
+      webhook_data=$(jq -n --arg url "$WEBHOOK_URL" '{"name": "web", "config": {"url": $url, "content_type": "json"}, "events": ["push"], "active": true}')
 
-    # Add a webhook to the new repository using the GitHub API
-    webhook_response=$(curl -s -H "Authorization: token $github_token" -H "Content-Type: application/json" -X POST -d "$webhook_data" "https://api.github.com/repos/$github_organization/$dir_name/hooks" | jq '.')
+      # Add a webhook to the new repository using the GitHub API
+      webhook_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" -X POST -d "$webhook_data" "https://api.github.com/repos/$GITHUB_ORGANIZATION/$dir_name/hooks" | jq '.')
 
-    # Print the GitHub API response for the webhook for debugging
-    echo "GitHub API response (Webhook): $webhook_response"
+      # Print the GitHub API response for the webhook for debugging
+      echo "GitHub API response (Webhook): $webhook_response"
 
-    echo "Webhook added to the new repository in the '$github_organization' organization."
+      echo "Webhook added to the new repository in the '$GITHUB_ORGANIZATION' organization."
+    }
 
-  # Trigger build
-  git commit -m "Trigger build." --allow-empty
-  git push origin main
+  # Function to connect Lagoon project to Git repo
+  connect_lagoon_project_to_git() {
+    # Deploy Key
+    add_deploy_key_to_repo
 
-# Add Lagoon project to group and/or Organization
-  lagoon add project-group -p $dir_name -N amazeeio-sales
+    # Webhook
+    add_webhook_to_repo
 
-  # //TODO - Figure out Organizations
+    # Trigger build
+    git commit -m "Trigger build." --allow-empty
+    git push origin main
 
-# Add users to Lagoon group
-# // TODO - Lagoon add user and user-group
+    # Add Lagoon project to group and/or Organization
+    # //TODO: split this out into a separate function
+    lagoon add project-group -p "$dir_name" -N amazeeio-sales
 
-collect_user_info() {
-  # Prompt user for email, first name, and last name
-  read -p "Enter your email address: " email
-  read -p "Enter your first name: " first_name
-  read -p "Enter your last name: " last_name
-}
+    # //TODO: - Figure out Organizations
+  }
 
-add_user_to_lagoon() {
-  # Assuming you have a command that takes email, first name, and last name as arguments
-  echo "Running command with provided information:"
-  echo "Email: $email"
-  echo "First Name: $first_name"
-  echo "Last Name: $last_name"
-  echo "Group: project-$dir_name" 
-  
-  # Replace the following command with your actual command
-  # Example: command_with_user_info "$email" "$first_name" "$last_name"
-  lagoon add user -E "$email" -F "$first_name" -L "$last_name"
-  lagoon add user-group -E "$email" -N project-$dir_name -R owner
-}
 
-# Ask the user if they want to add another user
-add_another_user() {
-  read -p "Do you want to add another user? (yes/no): " answer
-  if [ "$answer" = "yes" ]; then
-    return 0  # User wants to run again
-  else
-    return 1  # User does not want to run again
-  fi
-}
+
+# 7. Add users to Lagoon + group
+
+# //TODO: Handle custom groups
+
+  # Function to collect user email and name
+    collect_user_info() {
+      # Prompt user for email, first name, and last name
+      read -p "Enter your email address: " email
+      read -p "Enter your first name: " first_name
+      read -p "Enter your last name: " last_name
+    }
+
+  # Function to create Lagoon user and add to group
+  add_user_to_lagoon() {
+    # Assuming you have a command that takes email, first name, and last name as arguments
+    echo "Running command with provided information:"
+    echo "Email: $email"
+    echo "First Name: $first_name"
+    echo "Last Name: $last_name"
+    echo "Group: project-$dir_name" 
+    
+    # Replace the following command with your actual command
+    # Example: command_with_user_info "$email" "$first_name" "$last_name"
+    lagoon add user -E "$email" -F "$first_name" -L "$last_name"
+    lagoon add user-group -E "$email" -N project-$dir_name -R owner
+  }
+
+  # Function to ask the user if they want to add another user
+  add_another_user() {
+    read -p "Do you want to add another user? (yes/no): " answer
+    if [ "$answer" = "yes" ]; then
+      return 0  # User wants to run again
+    else
+      return 1  # User does not want to run again
+    fi
+  }
 
 # Main script
 main() {
-  # Ask if they want to add a user
-  read -p "Do you want to add a user? (yes/no): " add_user
 
+  # Clone repo?
+  read -p "Do you want to clone a repo? (yes/no): " clone_repo
+  if [ "$clone_repo" = "yes" ]; then
+    clone_repository
+  else
+    echo "Skipping repo clone"
+  fi
+
+  # Rename files?
+  read -p "Do you want to rename the project files and replace references to the old project name? (yes/no): " rename_files
+  if [ "$rename_files" = "yes" ]; then
+    clone_repo
+  else
+    echo "Skipping renaming"
+  fi
+
+  # Create new repo, push up local changes
+  read -p "Do you want to create a new repo and push up your local changes? (yes/no): " new_repo
+  if [ "$new_repo" = "yes" ]; then
+    clone_repo
+  else
+    echo "Skipping new repo + push"
+  fi
+
+  # Create Lagoon project?
+  read -p "Do you want to create a new Lagoon project? (yes/no): " lagoon_project
+  if [ "$lagoon_project" = "yes" ]; then
+    create_lagoon_project
+  else
+    echo "Skipping create lagoon project"
+  fi
+
+  # Connect Lagoon to github?
+  read -p "Do you want to connect Lagoon to github? (yes/no): " connect_lagoon
+  if [ "$connect_lagoon" = "yes" ]; then
+    connect_lagoon_project_to_git
+  else
+    echo "Skipping connect lagoon project to git"
+  fi
+
+  
+  # Add user(s)?
+  read -p "Do you want to add a user? (yes/no): " add_user
   if [ "$add_user" = "yes" ]; then
     while true; do
       # Collect user information
