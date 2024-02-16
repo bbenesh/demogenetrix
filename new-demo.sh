@@ -145,15 +145,24 @@ read -p "Enter a name for the project (this will also be the directory name of y
     local project_name="$1"
     local create_repo_response
     local repo_url
+    local current_dir
+    current_dir=$(basename "$(pwd)")
 
-    # Change into the newly cloned directory
-    cd "$project_name" || exit 1
+    if [[ "$current_dir" != "$project_name" ]]; then
+        # Change into the newly cloned directory
+        cd "$project_name" || { echo "Failed to change directory."; exit 1; }
+    fi
 
     # Create a new GitHub repository using the GitHub API
+    echo "Create a new GitHub repository using the GitHub AP"
+    # echo "curl -s -H Authorization: token $GITHUB_TOKEN" -d '{"name": "'"$project_name"'", "private": true}' "https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos"
     create_repo_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -d '{"name": "'"$project_name"'", "private": true}' "https://api.github.com/orgs/$GITHUB_ORGANIZATION/repos")
+    echo $create_repo_response
 
     # Extract the new repository URL
+    echo "Extract the new repository URL"
     repo_url=$(echo "$create_repo_response" | jq -r '.ssh_url')
+    echo $repo_url
 
     # Remove the old remote origin
     git remote remove origin
