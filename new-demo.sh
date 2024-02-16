@@ -171,9 +171,17 @@ read -p "Enter a name for the project (this will also be the directory name of y
   # Function to retrieve remote origin URL if skipped create_and_push_repo step
   get_remote_origin_url() {
       local project_name="$1"
+      local current_dir
+      current_dir=$(basename "$(pwd)")
 
-      cd "$project_name" || exit 1
-      repo_url=$(git config --get remote.origin.url)
+
+      if [[ "$current_dir" == "$project_name" ]]; then
+        repo_url=$(git config --get remote.origin.url)
+      else
+        cd "$project_name" || { echo "Failed to change directory."; exit 1; }
+        repo_url=$(git config --get remote.origin.url)
+        #cd ..
+      fi
   }
 
 # 5. Create Lagoon project
