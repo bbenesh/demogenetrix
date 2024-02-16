@@ -101,6 +101,18 @@ read -p "Enter a name for the project (this will also be the directory name of y
   # Function to rename files and replace reference to old project name
   rename_files_and_replace_references() {
     local project_name="$1"
+
+    # Echo the current working directory
+    echo "Current working directory: $(pwd)"
+    # Change directory to the one with the same name as project_name
+    cd "$project_name" || { echo "Failed to change directory."; exit 1; }
+    echo "New working directory: $(pwd)"
+
+
+    # Get the remote origin URL of the Git repository
+    local repo_url
+    repo_url=$(git config --get remote.origin.url)
+    
     local search_string
     local modified_string
 
