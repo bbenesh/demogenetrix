@@ -59,7 +59,11 @@ read -p "Enter a name for the project (this will also be the directory name of y
   clone_repository() {
     local project_name="$1"
     # Define Git repository URLs
-    local repos=("git@github.com:lagoon-examples/drupal-base" "git@github.com:lagoon-examples/drupal9-full.git" "https://github.com/example/repo3.git")
+    local repos=(
+      "git@github.com:lagoon-examples/drupal-base" 
+      "git@github.com:lagoon-examples/drupal-solr.git"
+      "git@github.com:lagoon-examples/drupal9-full.git"
+    ) 
     local choice
 
     # Display menu to choose a repository
