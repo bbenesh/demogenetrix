@@ -1,12 +1,14 @@
 #!/bin/bash
 
-#//TODO - store token separately and then add this script to a repo for storage, version tracking, sharing
+#//TODO - store token separately
 #//TODO - test local spin up with docker
 #//TODO - install composer req + db
-#//TODO - pull all available repos from lagoon examples as options
 #//TODO - push local files + db up to remote lagoon
+#//TODO - pull all available repos from lagoon examples as options
 #//TODO - Add to amazeeio-sales group + Org (when Orgs are ready)
 #//TODO - Prompt for custom group
+#//TODO - edit output for better readibility and letting the user know what's happening
+#//TODO - add ending message to alert user that script is done
 
 # 1. Setup req's for script
 
