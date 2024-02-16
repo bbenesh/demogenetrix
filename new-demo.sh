@@ -195,6 +195,13 @@ read -p "Enter a name for the project (this will also be the directory name of y
   #     fi
   # }
 
+# 5. Create Lagoon project
+
+  # Function to create Lagoon project
+  create_lagoon_project() {
+    local project_name="$1"
+    local current_dir
+    current_dir=$(basename "$(pwd)")
 
       if [[ "$current_dir" == "$project_name" ]]; then
         repo_url=$(git config --get remote.origin.url)
@@ -203,14 +210,8 @@ read -p "Enter a name for the project (this will also be the directory name of y
         repo_url=$(git config --get remote.origin.url)
         #cd ..
       fi
-  }
-
-# 5. Create Lagoon project
-
-  # Function to create Lagoon project
-  create_lagoon_project() {
-    local project_name="$1"
-
+    
+    echo 'Creating lagoon project "'$project_name'" -b "^(main|dev|feature.*)$" -g "'$repo_url'" -S 126 -m true -E main'
     lagoon add project -p "$project_name" -b "^(main|dev|feature.*)$" -g "$repo_url" -S 126 -m true -E main
   }
 
@@ -307,9 +308,12 @@ read -p "Enter a name for the project (this will also be the directory name of y
     echo "Last Name: $last_name"
     echo "Group: project-$project_name" 
     
-    # Replace the following command with your actual command
-    # Example: command_with_user_info "$email" "$first_name" "$last_name"
+    # Create user... 
+    echo "Creating user.."
     lagoon add user -E "$email" -F "$first_name" -L "$last_name"
+
+    # And add user to default project group
+    echo "Adding user to group project-n"$project_name"..."
     lagoon add user-group -E "$email" -N project-$project_name -R owner
   }
 
