@@ -395,6 +395,17 @@ main() {
     echo "Skipping user addition."
   fi
 
+  #//TODO - turn this into functions
+  echo "Now run:"
+  echo "pygmy up"
+  echo "docker build"
+  echo "docker-compose up -d"
+  echo "docker-compose exec cli composer install"
+  echo "docker-compose exec cli drush si demo_umami -y"
+  echo "docker-compose exec cli drush la"
+  echo "docker-compose exec cli drush sql-sync @self @lagoon.[project]-[env]"
+  echo "docker-compose exec cli drush rsync @self:%files @lagoon.[project]-[env]:%files"
+
   }
 
 # Execute the main function
