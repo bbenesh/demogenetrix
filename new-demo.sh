@@ -47,6 +47,7 @@
 
   # GitHub organization and token
   GITHUB_ORGANIZATION="amazeeio-demos"
+  WEBHOOK_URL="https://hooks.lagoon.amazeeio.cloud"
   # Demo Creator Script Token
   # GITHUB_TOKEN="$GITHUB_TOKEN"
   
