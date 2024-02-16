@@ -117,17 +117,21 @@ read -p "Enter a name for the project (this will also be the directory name of y
     local modified_string
 
     # Extract the part of the repo string after the last /
-    search_string=$(echo "${repos[$choice]}" | awk -F'/' '{print $NF}' | sed 's/\.git$//')
+    #search_string=$(echo "${repos[$choice]}" | awk -F'/' '{print $NF}' | sed 's/\.git$//')
+    search_string=$(basename "$repo_url" | sed 's/\.git$//')
 
     # Use grep to search for the string in all files and replace it
-    grep -rli "$search_string" "$project_name" | xargs sed -i '' -e "s/$search_string/$project_name/g"
+    #grep -rli "$search_string" "$project_name" | xargs sed -i '' -e "s/$search_string/$project_name/g"
+    grep -rli "$search_string" | xargs sed -i '' -e "s/$search_string/$project_name/g"
 
     # Remove spaces and dashes from the original string
     modified_string=$(echo "$search_string" | tr -d '[:space:]' | tr -d '-')
 
     # Use grep to search for the modified string in all files and replace it
-    grep -rli "$modified_string" "$project_name" | xargs sed -i '' -e "s/$modified_string/$project_name/g"
+    #grep -rli "$modified_string" "$project_name" | xargs sed -i '' -e "s/$modified_string/$project_name/g"
+    grep -rli "$modified_string" | xargs sed -i '' -e "s/$modified_string/$project_name/g"
 
+    echo "Repo url: '$repo_url'"
     echo "String '$search_string' and '$modified_string' replaced with '$project_name' in all files."
   }
 
