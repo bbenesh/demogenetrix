@@ -9,6 +9,10 @@
 #//TODO - Prompt for custom group
 #//TODO - edit output for better readibility and letting the user know what's happening
 #//TODO - add ending message to alert user that script is done
+#//TODO - fix webhook not adding pull request rights
+#//TODO - do site install either locally or on remote
+#//TODO - export config, commit and push up
+#//TODO - uncomment and update post rollout tasks
 
 # 1. Setup req's for script
 
