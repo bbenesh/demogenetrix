@@ -258,7 +258,7 @@ read -p "Enter a name for the project (this will also be the directory name of y
       # //TODO: Fix that it's only selecting the push event
 
       # Construct the JSON data for the webhook
-      webhook_data=$(jq -n --arg url "$WEBHOOK_URL" '{"name": "web", "config": {"url": $url, "content_type": "json"}, "events": ["push"], "active": true}')
+      webhook_data=$(jq -n --arg url "$WEBHOOK_URL" '{"name": "web", "config": {"url": $url, "content_type": "json"}, "events": ["push", "pull_request"], "active": true}')
 
       # Add a webhook to the new repository using the GitHub API
       webhook_response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" -X POST -d "$webhook_data" "https://api.github.com/repos/$GITHUB_ORGANIZATION/$project_name/hooks" | jq '.')
