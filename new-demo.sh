@@ -70,6 +70,7 @@ read -p "Enter a name for the project (this will also be the directory name of y
       "git@github.com:lagoon-examples/drupal-base" 
       "git@github.com:lagoon-examples/drupal-solr.git"
       "git@github.com:lagoon-examples/drupal9-full.git"
+      git@github.com:amazeeio-demos/demo-node-simple.git
     ) 
     local choice
 
