@@ -82,7 +82,7 @@ docker-compose exec cli drush rsync @self:%files @lagoon.[project]-[env]:%files
 
 #### Drupal -
 
-##### 1. edit these files:
+##### 1. edit these files
 
 ```
 diff --git a/.lagoon.yml b/.lagoon.yml
@@ -150,4 +150,72 @@ edit these files
 
 #### NextJS -
 
-##### edit these files:
+##### 1. edit these files
+
+```
+diff --git a/.lagoon.env.main b/.lagoon.env.main
+index 4c569bb..b78ebbb 100644
+--- a/.lagoon.env.main
++++ b/.lagoon.env.main
+@@ -1,7 +1,7 @@
+-NEXT_PUBLIC_DRUPAL_BASE_URL=https://drupal.demo.composetheweb.com
+-NEXT_IMAGE_DOMAIN=drupal.demo.composetheweb.com
++NEXT_PUBLIC_DRUPAL_BASE_URL=https://nginx.main.demo-[PROJECT-NAME]-nextdrupal-drupal.us2.amazee.io
++NEXT_IMAGE_DOMAIN=nginx.main.demo-[PROJECT-NAME]-nextdrupal-drupal.us2.amazee.io
+ DRUPAL_PREVIEW_SECRET=secret
+ NEXTAUTH_SECRET=
+-NEXTAUTH_URL=https://drupal.demo.composetheweb.com
++NEXTAUTH_URL=https://nginx.main.demo-[PROJECT-NAME]-nextdrupal-drupal.us2.amazee.io
+ DRUPAL_CLIENT_ID=
+ DRUPAL_CLIENT_SECRET=
+```
+
+```
+diff --git a/.lagoon.yml b/.lagoon.yml
+index fe5240a..99c89a8 100644
+--- a/.lagoon.yml
++++ b/.lagoon.yml
+@@ -1,10 +1,10 @@
+ docker-compose-yaml: docker-compose.yml
+ project: demo-[PROJECT-NAME]-nextdrupal-nextjs
+
+-environments:
+-  main:
+-    routes:
+-      - node:
+-        - "next.demo.composetheweb.com":
+-            tls-acme: true
+-            insecure: Redirect
++#environments:
++#  main:
++#    routes:
++#      - node:
++#        - "next.demo.composetheweb.com":
++#            tls-acme: true
++#            insecure: Redirect
+```
+
+##### 2. run these steps
+
+cp .env.example to .env.local
+update the values in the file
+
+```
+-NEXT_PUBLIC_DRUPAL_BASE_URL=http://drupal-composetheweb:8080
+-NEXT_IMAGE_DOMAIN=drupal-composetheweb
++NEXT_PUBLIC_DRUPAL_BASE_URL=http://drupal-[PROJECT-NAME]-composetheweb:8080
++NEXT_IMAGE_DOMAIN=drupal-[PROJECT-NAME]-composetheweb
+ DRUPAL_PREVIEW_SECRET=secret
+ NEXTAUTH_SECRET=
+ NEXTAUTH_URL=http://demo-[PROJECT-NAME]-nextdrupal-nextjs.docker.amazee.io
+```
+
+start up services + containers
+
+```
+docker-compose build
+docker-compose run -u 1002 node sh
+$ npm install     <==== in the container
+$ ctrl-d      
+docker-compose up
+```
