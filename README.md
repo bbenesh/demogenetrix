@@ -82,7 +82,7 @@ docker-compose exec cli drush rsync @self:%files @lagoon.[project]-[env]:%files
 
 #### Drupal -
 
-##### edit these files:
+##### 1. edit these files:
 
 ```
 diff --git a/.lagoon.yml b/.lagoon.yml
@@ -124,7 +124,7 @@ index 55cfde4..a477b2e 100644
    php:
 ```
 
-##### run these steps
+##### 2. run these steps
 
 start up services + containers
 
