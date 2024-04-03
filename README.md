@@ -63,7 +63,11 @@ Do you want to add a user? (yes/no):
 
 ## Manual steps for finishing site setup
 
+### Plain Drupal
+
 Now run:
+
+```
 pygmy up
 docker build
 docker-compose up -d
@@ -72,6 +76,7 @@ docker-compose exec cli drush si demo_umami -y
 docker-compose exec cli drush la
 docker-compose exec cli drush sql-sync @self @lagoon.[project]-[env]
 docker-compose exec cli drush rsync @self:%files @lagoon.[project]-[env]:%files
+```
 
 ### If NextDrupal...
 
