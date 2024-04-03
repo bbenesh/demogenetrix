@@ -43,7 +43,7 @@ Enter the number corresponding to the repository:
 
 Do you want to rename the project files and replace references to the old project name? (yes/no):
 
-### Create a new repo in amazeeio-sales
+### Create a new repo in amazeeio-demos
 
 Do you want to create a new repo and push up your local changes? (yes/no):
 
