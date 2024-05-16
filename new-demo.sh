@@ -73,6 +73,7 @@ read -p "Enter a name for the project (this will also be the directory name of y
       "git@github.com:amazeeio-demos/demo-node-simple.git"
       "git@github.com:amazeeio-demos/demo-nextdrupal-drupal.git"
       "git@github.com:amazeeio-demos/demo-nextdrupal-nextjs.git"
+      "git@github.com:lagoon-examples/wordpress-base.git"
     ) 
     local choice
 
